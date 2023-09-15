@@ -12,13 +12,13 @@ int main(int argc, char *argv[])
     long int sum = 0;
 
     #pragma omp parallel for ordered
-        for (size_t i = 0; i < omp_get_num_threads(); ++i)
-        {
-            #pragma omp ordered
-            sum += 1;
+    for (size_t i = 0; i < omp_get_num_threads(); ++i)
+    {
+        #pragma omp ordered
+        sum += 1;
 
-            printf("%d %ld\n", omp_get_thread_num(), sum);
-        }
+        printf("%d %ld\n", omp_get_thread_num(), sum);
+    }
 
     printf("Total sum is %ld\n", sum);
 

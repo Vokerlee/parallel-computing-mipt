@@ -22,10 +22,10 @@ int main(int argc, char *argv[])
     double sum = 0;
 
     #pragma omp parallel for reduction(+: sum)
-        for (size_t i = 1; i <= n_summands; ++i)
-        {
-            sum += 1. / i;
-        }
+    for (size_t i = 1; i <= n_summands; ++i)
+    {
+        sum += 1. / i;
+    }
 
     printf("Total sum is %lf\n", sum);
 
