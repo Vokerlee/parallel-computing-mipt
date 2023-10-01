@@ -85,13 +85,15 @@ def plot_matrix_res(matrix_res, martix_sizes, optimizations):
     set_axis_properties(axes)
 
     axes.set_xlabel('Amount of threads (OpenMP)')
-    axes.set_ylabel('Execution time')
-    axes.set_title('Execution time from amount of threads for matrix multiplication')
+    axes.set_ylabel('Boost')
+    axes.set_title('Boost from amount of threads for matrix multiplication')
 
     none_opt_index = get_index_by_el(optimizations, 'none')
 
     for matrix_size_index in range(len(martix_sizes)):
         for opt_index in range(len(optimizations)):
+            plot_color = (opt_index / len(optimizations), matrix_size_index / len(martix_sizes), 1 - matrix_size_index / len(martix_sizes))
+
             n_threads = [matrix_res[opt_index][matrix_size_index][i].n_threads
                          for i in range(len(matrix_res[opt_index][matrix_size_index]))]
 
@@ -99,8 +101,9 @@ def plot_matrix_res(matrix_res, martix_sizes, optimizations):
                          matrix_res[opt_index][matrix_size_index][i].exec_time
                          for i in range(len(matrix_res[opt_index][matrix_size_index]))]
 
-            axes.plot(n_threads, exec_time, "*-", label=("matrix size: " + str(martix_sizes[matrix_size_index]) +
-                                                       ", optimization: " + optimizations[opt_index]))
+            axes.plot(n_threads, exec_time, "*-", color=plot_color,
+                      label=("matrix size: " + str(martix_sizes[matrix_size_index]) +
+                           ", optimization: " + optimizations[opt_index]))
 
 
     axes.legend()

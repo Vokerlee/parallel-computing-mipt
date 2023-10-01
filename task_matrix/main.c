@@ -20,7 +20,25 @@ int main(int argc, char *argv[])
 
     double start_time = omp_get_wtime();
 
+    #ifdef NOOPTIMIZE
     matrix_multiply(A, B, C);
+    #endif
+
+    #ifdef OPT1_LOOP
+    matrix_multiply_opt1(A, B, C);
+    #endif
+
+    #ifdef OPT2
+    matrix_multiply_opt2(A, B, C);
+    #endif
+
+    #ifdef OPT3
+    matrix_multiply_opt3(A, B, C);
+    #endif
+
+    #ifdef OPT4
+    matrix_multiply_opt4(A, B, C);
+    #endif
 
     double exec_time = omp_get_wtime() - start_time;
 
