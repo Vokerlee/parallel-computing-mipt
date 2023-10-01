@@ -3,19 +3,26 @@ OPTS = -fopenmp
 SRC  = main.c matrix.c
 BIN  = matrix
 
+BUILD_DIR   = build
+RESULTS_DIR = results
+
+DEFS = MATRIX_SIZE=512 N_THREADS=8
+OPTS_DEFS = $(addprefix -D,$(DEFS))
+
 all: build
 
-build: build_seq
+build: build_default
 
-build_seq:
-	$(CC) $(SRC) $(OPTS) -o seq_$(BIN)
+$(BUILD_DIR)_dir:
+	mkdir -p $(BUILD_DIR)
 
-run: run_seq
+build_default: $(BUILD_DIR)_dir
+	$(CC) $(SRC) $(OPTS) $(OPTS_DEFS) -o $(BUILD_DIR)/default_$(BIN)
 
-run_seq:
-	./seq_$(BIN) > seq_$(BIN).res
+run: run_default
 
-clean: clean_seq
+run_default:
+	./$(BUILD_DIR)/default_$(BIN)
 
-clean_seq:
-	rm -rf seq_*
+clean:
+	rm -rf ${BUILD_DIR} ${RESULTS_DIR}

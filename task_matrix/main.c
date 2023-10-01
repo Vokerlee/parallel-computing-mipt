@@ -21,7 +21,6 @@ int main(int argc, char *argv[])
     matrix_multiply_seq(A, B, C);
 
     double exec_time = omp_get_wtime() - start_time;
-    printf("%lf\n", exec_time);
 
     for (int i = 0; i < MATRIX_SIZE; i++)
     {
@@ -30,6 +29,8 @@ int main(int argc, char *argv[])
             printf("%lf\n", C[i][j]);
         }
     }
+
+    printf("exec_time %lf\n", exec_time);
 
     return EXIT_SUCCESS;
 }

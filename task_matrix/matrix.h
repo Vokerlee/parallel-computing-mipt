@@ -2,7 +2,7 @@
 #define MATRIX_PARALLEL_MATRIX_PARALLEL
 
 #ifndef MATRIX_SIZE
-    #define MATRIX_SIZE 128
+    #define MATRIX_SIZE 512
 #endif
 
 void matrix_init(double matrix[MATRIX_SIZE][MATRIX_SIZE]);
