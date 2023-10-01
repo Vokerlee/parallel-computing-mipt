@@ -17,7 +17,7 @@ $(BUILD_DIR)_dir:
 	mkdir -p $(BUILD_DIR)
 
 build_default: $(BUILD_DIR)_dir
-	$(CC) $(SRC) $(OPTS) $(OPTS_DEFS) -o $(BUILD_DIR)/default_$(BIN)
+	$(CC) $(SRC) $(OPTS) $(OPTS_DEFS) -DNOOPTIMIZE -o $(BUILD_DIR)/default_$(BIN)
 
 run: run_default
 
