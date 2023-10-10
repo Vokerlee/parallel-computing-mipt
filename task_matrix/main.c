@@ -42,13 +42,13 @@ int main(int argc, char *argv[])
 
     double exec_time = omp_get_wtime() - start_time;
 
-    const double **C_values = matrix_get_values(C);
+    const double *C_values = matrix_get_values(C);
 
     for (int i = 0; i < MATRIX_SIZE; i++)
     {
         for (int j = 0; j < MATRIX_SIZE; j++)
         {
-            printf("%lf\n", C_values[i][j]);
+            printf("%lf\n", C_values[i * MATRIX_SIZE + j]);
         }
     }
 
