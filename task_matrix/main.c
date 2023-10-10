@@ -40,6 +40,10 @@ int main(int argc, char *argv[])
     matrix_multiply_opt4(A, B, C);
     #endif
 
+    #ifdef OPT_STRASSEN
+    matrix_multiply_strassen(A, B, C);
+    #endif
+
     double exec_time = omp_get_wtime() - start_time;
 
     const double *C_values = matrix_get_values(C);

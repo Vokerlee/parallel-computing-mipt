@@ -52,7 +52,7 @@ void matrix_init(matrix_t *matrix)
     for (size_t i = 0; i < matrix->size_y; i++)
     {
         for (size_t j = 0; j < size_x; j++)
-            matrix->values[i * size_x + j] = 499.0 * i * j;
+            matrix->values[i * size_x + j] = i * j * 1.0;
     }
 }
 
@@ -367,7 +367,7 @@ int matrix_multiply_strassen(matrix_t *matrix_A, matrix_t *matrix_B, matrix_t *m
     matrix_sub(matrix_B21, matrix_B11, matrix_B_buffer);
     matrix_multiply_opt4(matrix_A22, matrix_B_buffer, matrix_M4);
 
-    matrix_sub(matrix_A11, matrix_A12, matrix_A_buffer);
+    matrix_add(matrix_A11, matrix_A12, matrix_A_buffer);
     matrix_multiply_opt4(matrix_A_buffer, matrix_B22, matrix_M5);
 
     matrix_sub(matrix_A21, matrix_A11, matrix_A_buffer);
@@ -386,8 +386,16 @@ int matrix_multiply_strassen(matrix_t *matrix_A, matrix_t *matrix_B, matrix_t *m
     matrix_add(matrix_C1_buffer, matrix_M6, matrix_C2_buffer);
     matrix_sub(matrix_C2_buffer, matrix_M2, matrix_C22);
 
-    matrix_add(matrix_M1, matrix_M4, matrix_C21);
+    matrix_add(matrix_M2, matrix_M4, matrix_C21);
     matrix_add(matrix_M3, matrix_M5, matrix_C12);
+
+    // for (int i = 0; i < newBy_size; i++)
+    // {
+    //     for (int j = 0; j < newBx_size; j++)
+    //     {
+    //         printf("%lf\n", matrix_C22->values[i * newAx_size + j]);
+    //     }
+    // }
 
     #pragma omp parallel for
     for (int i = 0; i < newAy_size; i++)
