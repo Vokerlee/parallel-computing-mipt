@@ -278,7 +278,7 @@ int matrix_multiply_opt4(matrix_t *matrix_A, matrix_t *matrix_B, matrix_t *matri
 
 int matrix_multiply_strassen(matrix_t *matrix_A, matrix_t *matrix_B, matrix_t *matrix_C)
 {
-    const size_t block_size = 64;
+    const size_t block_size = 128;
 
     if (matrix_A->size_x != matrix_B->size_y ||
         matrix_C->size_x != matrix_B->size_x || matrix_C->size_y != matrix_A->size_y)
@@ -288,6 +288,10 @@ int matrix_multiply_strassen(matrix_t *matrix_A, matrix_t *matrix_B, matrix_t *m
         matrix_B->size_x % block_size != 0 || matrix_B->size_y % block_size != 0 ||
         matrix_C->size_x % block_size != 0 || matrix_C->size_y % block_size != 0)
         return -1;
+
+    if (matrix_A->size_x <= block_size || matrix_A->size_y <= block_size ||
+        matrix_B->size_x <= block_size || matrix_B->size_y <= block_size)
+        return matrix_multiply_opt4(matrix_A, matrix_B, matrix_C);
 
     // if () {
     //     C[0][0] = A[0][0] * B[0][0];
@@ -356,27 +360,27 @@ int matrix_multiply_strassen(matrix_t *matrix_A, matrix_t *matrix_B, matrix_t *m
 
     matrix_add(matrix_A11, matrix_A22, matrix_A_buffer);
     matrix_add(matrix_B11, matrix_B22, matrix_B_buffer);
-    matrix_multiply_opt4(matrix_A_buffer, matrix_B_buffer, matrix_M1);
+    matrix_multiply_strassen(matrix_A_buffer, matrix_B_buffer, matrix_M1);
 
     matrix_add(matrix_A21, matrix_A22, matrix_A_buffer);
-    matrix_multiply_opt4(matrix_A_buffer, matrix_B11, matrix_M2);
+    matrix_multiply_strassen(matrix_A_buffer, matrix_B11, matrix_M2);
 
     matrix_sub(matrix_B12, matrix_B22, matrix_B_buffer);
-    matrix_multiply_opt4(matrix_A11, matrix_B_buffer, matrix_M3);
+    matrix_multiply_strassen(matrix_A11, matrix_B_buffer, matrix_M3);
 
     matrix_sub(matrix_B21, matrix_B11, matrix_B_buffer);
-    matrix_multiply_opt4(matrix_A22, matrix_B_buffer, matrix_M4);
+    matrix_multiply_strassen(matrix_A22, matrix_B_buffer, matrix_M4);
 
     matrix_add(matrix_A11, matrix_A12, matrix_A_buffer);
-    matrix_multiply_opt4(matrix_A_buffer, matrix_B22, matrix_M5);
+    matrix_multiply_strassen(matrix_A_buffer, matrix_B22, matrix_M5);
 
     matrix_sub(matrix_A21, matrix_A11, matrix_A_buffer);
     matrix_add(matrix_B11, matrix_B12, matrix_B_buffer);
-    matrix_multiply_opt4(matrix_A_buffer, matrix_B_buffer, matrix_M6);
+    matrix_multiply_strassen(matrix_A_buffer, matrix_B_buffer, matrix_M6);
 
     matrix_sub(matrix_A12, matrix_A22, matrix_A_buffer);
     matrix_add(matrix_B21, matrix_B22, matrix_B_buffer);
-    matrix_multiply_opt4(matrix_A_buffer, matrix_B_buffer, matrix_M7);
+    matrix_multiply_strassen(matrix_A_buffer, matrix_B_buffer, matrix_M7);
 
     matrix_add(matrix_M1, matrix_M4, matrix_C1_buffer);
     matrix_add(matrix_C1_buffer, matrix_M7, matrix_C2_buffer);
@@ -447,6 +451,38 @@ int matrix_multiply_strassen(matrix_t *matrix_A, matrix_t *matrix_B, matrix_t *m
     matrix_destroy(matrix_B_buffer);
     matrix_destroy(matrix_C1_buffer);
     matrix_destroy(matrix_C2_buffer);
+
+    return 0;
+}
+
+int matrix_multiply_offload(matrix_t *matrix_A, matrix_t *matrix_B, matrix_t *matrix_C)
+{
+    if (matrix_A->size_x != matrix_B->size_y ||
+        matrix_C->size_x != matrix_B->size_x || matrix_C->size_y != matrix_A->size_y)
+        return -1;
+
+    int size_A = matrix_A->size_x * matrix_A->size_y;
+    int size_B = matrix_B->size_x * matrix_B->size_y;
+    int size_C = matrix_C->size_x * matrix_C->size_y;
+
+    int size_By = matrix_B->size_y;
+    int size_Bx = matrix_B->size_x;
+    int size_Cx = matrix_C->size_x;
+
+    double *A = matrix_A->values;
+    double *B = matrix_B->values;
+    double *C = matrix_C->values;
+
+    #pragma omp target map(to: A[0:size_A], B[0:size_B]) map(from: C[0:size_C])
+    #pragma omp teams distribute parallel for collapse(2)
+    for (size_t i = 0; i < matrix_C->size_y; i++)
+    {
+        for (size_t j = 0; j < matrix_C->size_x; j++)
+        {
+            for (size_t k = 0; k < matrix_A->size_x; k++)
+                C[i * size_Cx + j] += A[i * size_Cx + k] * B[k * size_Bx + j];
+        }
+    }
 
     return 0;
 }

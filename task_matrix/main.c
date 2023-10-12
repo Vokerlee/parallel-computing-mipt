@@ -7,6 +7,8 @@
 #include <sysexits.h>
 #include <errno.h>
 
+#define N 1024
+
 int main(int argc, char *argv[])
 {
     omp_set_num_threads(N_THREADS);
@@ -42,6 +44,10 @@ int main(int argc, char *argv[])
 
     #ifdef OPT_STRASSEN
     matrix_multiply_strassen(A, B, C);
+    #endif
+
+    #ifdef OPT_OFFLOAD
+    matrix_multiply_offload(A, B, C);
     #endif
 
     double exec_time = omp_get_wtime() - start_time;

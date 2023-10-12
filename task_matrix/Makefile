@@ -11,7 +11,7 @@ OPTS_DEFS = $(addprefix -D,$(DEFS))
 
 all: build
 
-build: build_default build_opt1 build_opt2 build_opt3 build_opt4 build_strassen
+build: build_default build_opt1 build_opt2 build_opt3 build_opt4 build_strassen build_offload
 
 $(BUILD_DIR)_dir:
 	mkdir -p $(BUILD_DIR)
@@ -34,6 +34,10 @@ build_opt4: $(BUILD_DIR)_dir
 build_strassen: $(BUILD_DIR)_dir
 	$(CC) $(SRC) $(OPTS) $(OPTS_DEFS) -DOPT_STRASSEN -o $(BUILD_DIR)/opt_strassen_$(BIN)
 
+build_offload: $(BUILD_DIR)_dir
+	# clang $(SRC) -fopenmp -mavx -fopenmp-targets=nvptx64 -O1 $(OPTS_DEFS) -DOPT_OFFLOAD -o $(BUILD_DIR)/opt_offload_$(BIN)
+	$(CC) $(SRC) $(OPTS) $(OPTS_DEFS) -DOPT_OFFLOAD -o $(BUILD_DIR)/opt_offload_$(BIN)
+
 run: run_default
 
 run_default:
@@ -53,6 +57,9 @@ run_opt4:
 
 run_strassen:
 	./$(BUILD_DIR)/opt_strassen_$(BIN)
+
+run_offload:
+	./$(BUILD_DIR)/opt_offload_$(BIN)
 
 clean:
 	rm -rf ${BUILD_DIR} ${RESULTS_DIR}
