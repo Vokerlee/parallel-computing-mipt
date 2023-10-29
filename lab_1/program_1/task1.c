@@ -10,8 +10,8 @@
 // All variables naming is taken from original task,
 // os if you don't like them - I understand you.
 
-#define ISIZE 20
-#define JSIZE 20
+#define ISIZE 5000
+#define JSIZE 5000
 
 int main(int argc, char **argv)
 {
@@ -87,8 +87,6 @@ int main(int argc, char **argv)
     MPI_Barrier(MPI_COMM_WORLD);
 
     double end_time = MPI_Wtime();
-
-    // ОСТАЛАСЬ ТОЛЬКО ЗАПИСЬ В КОНЦЕ
 
     if (comm_rank == 0)
     {
