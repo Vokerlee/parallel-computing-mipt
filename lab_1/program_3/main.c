@@ -10,8 +10,8 @@
 // All variables naming is taken from original task,
 // os if you don't like them - I understand you.
 
-#define ISIZE 5000
-#define JSIZE 5000
+#define ISIZE 20
+#define JSIZE 20
 
 int main(int argc, char **argv)
 {
@@ -36,13 +36,15 @@ int main(int argc, char **argv)
         errx(error_value, "error %d: MPI_Comm_rank()", error_value);
 
     double **a = (double **) calloc(ISIZE, sizeof(double *));
-    if (a == NULL)
+    double **b = (double **) calloc(ISIZE, sizeof(double *));
+    if (a == NULL || b == NULL)
         errx(error_value, "error: calloc()");
 
     for (size_t i = 0; i < ISIZE; ++i)
     {
         a[i] = (double *) calloc(JSIZE, sizeof(double));
-        if (a[i] == NULL)
+        b[i] = (double *) calloc(JSIZE, sizeof(double));
+        if (a[i] == NULL || b[i] == NULL)
             errx(error_value, "error: calloc()");
     }
 
@@ -50,38 +52,30 @@ int main(int argc, char **argv)
     for (size_t i = 0; i < ISIZE; i++)
     {
         for (size_t j = 0; j < JSIZE; j++)
+        {
             a[i][j] = 10 * i + j;
+            b[i][j] = 0;
+        }
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
 
     double start_time = MPI_Wtime();
 
-    size_t chunk_start = (JSIZE - 1) / comm_size * comm_rank;
-    size_t chunk_end   = (comm_rank == (comm_size - 1)) ? (JSIZE - 1) :
-                          chunk_start + (JSIZE - 1) / comm_size;
+    size_t chunk_start = JSIZE / comm_size * comm_rank;
+    size_t chunk_end   = (comm_rank == (comm_size - 1)) ? JSIZE :
+                          chunk_start + JSIZE / comm_size;
 
-    for (size_t i = 1; i <= ISIZE; ++i)
+    for (size_t i = 0; i < ISIZE; ++i)
     {
-        if (comm_rank == 0)
-        {
-            MPI_Recv(&a[i - 1][chunk_end], 1, MPI_DOUBLE, comm_rank + 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        }
-        else if (comm_rank == comm_size - 1)
-        {
-            MPI_Send(&a[i - 1][chunk_start], 1, MPI_DOUBLE, comm_rank - 1, 0, MPI_COMM_WORLD);
-        }
-        else
-        {
-            MPI_Send(&a[i - 1][chunk_start], 1, MPI_DOUBLE, comm_rank - 1, 0, MPI_COMM_WORLD);
-            MPI_Recv(&a[i - 1][chunk_end], 1, MPI_DOUBLE, comm_rank + 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        }
+        for (size_t j = chunk_start; j < chunk_end; ++j)
+            a[i][j] = sin(0.1 * a[i][j]);
+    }
 
-        if (i < ISIZE)
-        {
-            for (size_t j = chunk_start; j < chunk_end; ++j)
-             a[i][j] = sin(2 * a[i - 1][j + 1]);
-        }
+    for (size_t i = 0; i < ISIZE - 1; ++i)
+    {
+        for (size_t j = chunk_start; j < chunk_end; ++j)
+            b[i][j] = a[i + 1][j] * 1.5;
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
@@ -92,18 +86,18 @@ int main(int argc, char **argv)
     {
         for (size_t rank = 1; rank < comm_size; ++rank)
         {
-            size_t j_start = (JSIZE - 1) / comm_size * rank;
-            size_t j_end   = (rank == (comm_size - 1)) ? (JSIZE - 1) :
-                              chunk_start + (JSIZE - 1) / comm_size;
+            size_t j_start = JSIZE / comm_size * rank;
+            size_t j_end   = (rank == (comm_size - 1)) ? JSIZE :
+                              chunk_start + JSIZE / comm_size;
 
-            for (size_t i = 1; i < ISIZE; i++)
-                MPI_Recv(&a[i][j_start], j_end - j_start + 1, MPI_DOUBLE, rank, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            for (size_t i = 0; i < ISIZE; i++)
+                MPI_Recv(&b[i][j_start], j_end - j_start + 1, MPI_DOUBLE, rank, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         }
     }
     else
     {
-        for (size_t i = 1; i < ISIZE; i++)
-            MPI_Send(&a[i][chunk_start], chunk_end - chunk_start + 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
+        for (size_t i = 0; i < ISIZE; i++)
+            MPI_Send(&b[i][chunk_start], chunk_end - chunk_start + 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
     }
 
 #ifdef DEBUG_ON
@@ -113,7 +107,7 @@ int main(int argc, char **argv)
         for (size_t i = 0; i < ISIZE; i++)
         {
             for (size_t j = 0; j < JSIZE; j++)
-                printf("%f ", a[i][j]);
+                printf("%f ", b[i][j]);
 
             printf("\n");
         }
@@ -125,8 +119,12 @@ int main(int argc, char **argv)
         printf("%lf\n", end_time - start_time);
 
     for (size_t i = 0; i < JSIZE; ++i)
+    {
         free(a[i]);
+        free(b[i]);
+    }
 
+    free(b);
     free(a);
 
     MPI_Finalize();

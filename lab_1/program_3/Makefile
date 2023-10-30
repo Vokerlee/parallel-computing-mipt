@@ -1,7 +1,7 @@
 CC   = mpicc
 OPTS = -O2 -lm
 SRC  = main.c
-BIN  = task_1.elf
+BIN  = task_3.elf
 
 all: build
 
