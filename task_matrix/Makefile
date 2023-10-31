@@ -36,7 +36,9 @@ build_strassen: $(BUILD_DIR)_dir
 
 build_offload: $(BUILD_DIR)_dir
 	# clang $(SRC) -fopenmp -mavx -fopenmp-targets=nvptx64 -O1 $(OPTS_DEFS) -DOPT_OFFLOAD -o $(BUILD_DIR)/opt_offload_$(BIN)
-	$(CC) $(SRC) $(OPTS) $(OPTS_DEFS) -DOPT_OFFLOAD -o $(BUILD_DIR)/opt_offload_$(BIN)
+	clang $(SRC) -fopenmp -mavx -fopenmp-targets=nvptx64 -O1 $(OPTS_DEFS) -DOPT_OFFLOAD -o $(BUILD_DIR)/opt_offload_$(BIN)
+
+	# $(CC) $(SRC) $(OPTS) $(OPTS_DEFS) -DOPT_OFFLOAD -o $(BUILD_DIR)/opt_offload_$(BIN)
 
 run: run_default
 
