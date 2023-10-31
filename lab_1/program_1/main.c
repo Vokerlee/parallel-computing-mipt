@@ -10,8 +10,13 @@
 // All variables naming is taken from original task,
 // os if you don't like them - I understand you.
 
-#define ISIZE 5000
-#define JSIZE 5000
+#ifndef ISIZE
+    #define ISIZE 5000
+#endif
+
+#ifndef JSIZE
+    #define JSIZE 5000
+#endif
 
 int main(int argc, char **argv)
 {
@@ -37,16 +42,15 @@ int main(int argc, char **argv)
 
     double **a = (double **) calloc(ISIZE, sizeof(double *));
     if (a == NULL)
-        errx(error_value, "error: calloc()");
+        errx(EX_OSERR, "error: calloc()");
 
     for (size_t i = 0; i < ISIZE; ++i)
     {
         a[i] = (double *) calloc(JSIZE, sizeof(double));
         if (a[i] == NULL)
-            errx(error_value, "error: calloc()");
+            errx(EX_OSERR, "error: calloc()");
     }
 
-    // Master process initializes the array
     for (size_t i = 0; i < ISIZE; i++)
     {
         for (size_t j = 0; j < JSIZE; j++)
