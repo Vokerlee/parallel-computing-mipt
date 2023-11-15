@@ -47,13 +47,13 @@ cl_int lookup_devices()
             if (status == CL_SUCCESS)
                 printf("\t\tDevice name: %s\n", buffer);
 
-            // status = clGetDeviceInfo(devices[dev], CL_DEVICE_VENDOR, sizeof(buffer), &buffer, NULL);
-            // if (status == CL_SUCCESS)
-            //     printf("\t\tDevice vendor: %s\n", buffer);
+            status = clGetDeviceInfo(devices[dev], CL_DEVICE_VENDOR, sizeof(buffer), &buffer, NULL);
+            if (status == CL_SUCCESS)
+                printf("\t\tDevice vendor: %s\n", buffer);
 
-            // status = clGetDeviceInfo(devices[dev], CL_DEVICE_EXTENSIONS, sizeof(buffer), &buffer, NULL);
-            // if (status == CL_SUCCESS)
-            //     printf("\t\tDevice extensions: %s\n", buffer);
+            status = clGetDeviceInfo(devices[dev], CL_DEVICE_EXTENSIONS, sizeof(buffer), &buffer, NULL);
+            if (status == CL_SUCCESS)
+                printf("\t\tDevice extensions: %s\n", buffer);
 
             // Size of global memory cache in bytes.
             status = clGetDeviceInfo(devices[dev], CL_DEVICE_GLOBAL_MEM_CACHE_SIZE, sizeof(ulong), &ulong, NULL);
