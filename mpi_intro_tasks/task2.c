@@ -48,10 +48,12 @@ int main(int argc, char *argv[])
     // Calculate own sum
 
     long int terms_per_proc = n_terms / comm_size + (comm_rank == 0) * n_terms % comm_size;
+    long int end = n_terms - (comm_size - comm_rank - 1) * (n_terms / comm_size);
+    long int start = end - terms_per_proc + 1;
 
     double sum = 0;
-    for (int i = 0; i < terms_per_proc; ++i)
-        sum += ELEMENTARY_TERM;
+    for (long int i = start; i <= end; ++i)
+        sum += 1. / i;
 
     // Assemble result
 
